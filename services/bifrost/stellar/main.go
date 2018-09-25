@@ -3,8 +3,8 @@ package stellar
 import (
 	"sync"
 
-	"github.com/stellar/go/clients/horizon"
-	"github.com/stellar/go/support/log"
+	"github.com/quantadex/stellar_go/clients/horizon"
+	"github.com/quantadex/stellar_go/support/log"
 )
 
 // Status describes status of account processing

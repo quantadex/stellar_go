@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/stellar/go/services/horizon/internal/test"
+	"github.com/quantadex/stellar_go/services/horizon/internal/test"
 )
 
 func TestOfferActions_Index(t *testing.T) {

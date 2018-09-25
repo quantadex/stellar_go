@@ -4,8 +4,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stellar/go/price"
-	"github.com/stellar/go/xdr"
+	"github.com/quantadex/stellar_go/price"
+	"github.com/quantadex/stellar_go/xdr"
 	"github.com/stretchr/testify/assert"
 )
 

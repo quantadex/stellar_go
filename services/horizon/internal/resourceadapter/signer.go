@@ -3,8 +3,8 @@ package resourceadapter
 import (
 	"context"
 
-	"github.com/stellar/go/services/horizon/internal/db2/core"
-	. "github.com/stellar/go/protocols/horizon"
+	"github.com/quantadex/stellar_go/services/horizon/internal/db2/core"
+	. "github.com/quantadex/stellar_go/protocols/horizon"
 )
 
 // Populate fills out the fields of the signer, using one of an account's

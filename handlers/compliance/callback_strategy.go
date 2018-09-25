@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/url"
 
-	proto "github.com/stellar/go/protocols/compliance"
-	"github.com/stellar/go/support/errors"
+	proto "github.com/quantadex/stellar_go/protocols/compliance"
+	"github.com/quantadex/stellar_go/support/errors"
 )
 
 type pendingResponse struct {

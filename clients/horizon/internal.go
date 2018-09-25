@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/stellar/go/support/errors"
+	"github.com/quantadex/stellar_go/support/errors"
 )
 
 func decodeResponse(resp *http.Response, object interface{}) (err error) {

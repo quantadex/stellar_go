@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/stellar/go/keypair"
-	"github.com/stellar/go/services/internal/bridge-compliance-shared/http/helpers"
-	"github.com/stellar/go/services/internal/bridge-compliance-shared/protocols"
-	complianceServer "github.com/stellar/go/services/internal/bridge-compliance-shared/protocols/compliance"
-	"github.com/stellar/go/support/errors"
+	"github.com/quantadex/stellar_go/keypair"
+	"github.com/quantadex/stellar_go/services/internal/bridge-compliance-shared/http/helpers"
+	"github.com/quantadex/stellar_go/services/internal/bridge-compliance-shared/protocols"
+	complianceServer "github.com/quantadex/stellar_go/services/internal/bridge-compliance-shared/protocols/compliance"
+	"github.com/quantadex/stellar_go/support/errors"
 )
 
 var (

@@ -1,10 +1,10 @@
 package build
 
 import (
-	"github.com/stellar/go/amount"
-	"github.com/stellar/go/price"
-	"github.com/stellar/go/support/errors"
-	"github.com/stellar/go/xdr"
+	"github.com/quantadex/stellar_go/amount"
+	"github.com/quantadex/stellar_go/price"
+	"github.com/quantadex/stellar_go/support/errors"
+	"github.com/quantadex/stellar_go/xdr"
 )
 
 // CreateOffer creates a new offer

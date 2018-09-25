@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/stellar/go/amount"
-	"github.com/stellar/go/services/horizon/internal/db2/history"
-	"github.com/stellar/go/services/horizon/internal/httpx"
-	"github.com/stellar/go/support/render/hal"
-	. "github.com/stellar/go/protocols/horizon"
+	"github.com/quantadex/stellar_go/amount"
+	"github.com/quantadex/stellar_go/services/horizon/internal/db2/history"
+	"github.com/quantadex/stellar_go/services/horizon/internal/httpx"
+	"github.com/quantadex/stellar_go/support/render/hal"
+	. "github.com/quantadex/stellar_go/protocols/horizon"
 
 )
 

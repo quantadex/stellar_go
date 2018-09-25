@@ -4,12 +4,12 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/stellar/go/clients/federation"
-	"github.com/stellar/go/clients/stellartoml"
-	"github.com/stellar/go/services/compliance/internal/config"
-	"github.com/stellar/go/services/compliance/internal/crypto"
-	"github.com/stellar/go/services/compliance/internal/db"
-	"github.com/stellar/go/support/http"
+	"github.com/quantadex/stellar_go/clients/federation"
+	"github.com/quantadex/stellar_go/clients/stellartoml"
+	"github.com/quantadex/stellar_go/services/compliance/internal/config"
+	"github.com/quantadex/stellar_go/services/compliance/internal/crypto"
+	"github.com/quantadex/stellar_go/services/compliance/internal/db"
+	"github.com/quantadex/stellar_go/support/http"
 )
 
 // RequestHandler implements compliance server request handlers

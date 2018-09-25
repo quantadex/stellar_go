@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/stellar/go/services/horizon/internal/db2"
-	"github.com/stellar/go/support/errors"
+	"github.com/quantadex/stellar_go/services/horizon/internal/db2"
+	"github.com/quantadex/stellar_go/support/errors"
 )
 
 // LedgerBySequence loads the single ledger at `seq` into `dest`

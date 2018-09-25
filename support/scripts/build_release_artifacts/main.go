@@ -14,8 +14,8 @@ import (
 
 	"time"
 
-	"github.com/stellar/go/support/errors"
-	"github.com/stellar/go/support/log"
+	"github.com/quantadex/stellar_go/support/errors"
+	"github.com/quantadex/stellar_go/support/log"
 )
 
 var extractBinName = regexp.MustCompile(`^(?P<bin>[a-z-]+)-(?P<tag>.+)$`)
@@ -85,8 +85,8 @@ func binNamesForDir(dir string) []string {
 func build(pkg, dest, version, buildOS, buildArch string) {
 	buildTime := time.Now().Format(time.RFC3339)
 
-	timeFlag := fmt.Sprintf("-X github.com/stellar/go/support/app.buildTime=%s", buildTime)
-	versionFlag := fmt.Sprintf("-X github.com/stellar/go/support/app.version=%s", version)
+	timeFlag := fmt.Sprintf("-X github.com/quantadex/stellar_go/support/app.buildTime=%s", buildTime)
+	versionFlag := fmt.Sprintf("-X github.com/quantadex/stellar_go/support/app.version=%s", version)
 
 	if buildOS == "windows" {
 		dest = dest + ".exe"

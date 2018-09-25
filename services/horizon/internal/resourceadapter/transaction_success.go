@@ -3,10 +3,10 @@ package resourceadapter
 import (
 	"context"
 
-	"github.com/stellar/go/services/horizon/internal/httpx"
-	"github.com/stellar/go/services/horizon/internal/txsub"
-	. "github.com/stellar/go/protocols/horizon"
-	"github.com/stellar/go/support/render/hal"
+	"github.com/quantadex/stellar_go/services/horizon/internal/httpx"
+	"github.com/quantadex/stellar_go/services/horizon/internal/txsub"
+	. "github.com/quantadex/stellar_go/protocols/horizon"
+	"github.com/quantadex/stellar_go/support/render/hal"
 )
 
 // Populate fills out the details

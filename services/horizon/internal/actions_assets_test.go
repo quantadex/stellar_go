@@ -3,10 +3,10 @@ package horizon
 import (
 	"testing"
 
-	"github.com/stellar/go/protocols/horizon"
-	"github.com/stellar/go/protocols/horizon/base"
-	"github.com/stellar/go/services/horizon/internal/test"
-	"github.com/stellar/go/support/render/hal"
+	"github.com/quantadex/stellar_go/protocols/horizon"
+	"github.com/quantadex/stellar_go/protocols/horizon/base"
+	"github.com/quantadex/stellar_go/services/horizon/internal/test"
+	"github.com/quantadex/stellar_go/support/render/hal"
 )
 
 func TestAssetsActions(t *testing.T) {

@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"testing"
 
-	"github.com/stellar/go/services/horizon/internal/test"
+	"github.com/quantadex/stellar_go/services/horizon/internal/test"
 )
 
 type HTTPT struct {

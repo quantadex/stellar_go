@@ -5,8 +5,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net/http"
 
-	"github.com/stellar/go/keypair"
-	"github.com/stellar/go/services/internal/bridge-compliance-shared/http/helpers"
+	"github.com/quantadex/stellar_go/keypair"
+	"github.com/quantadex/stellar_go/services/internal/bridge-compliance-shared/http/helpers"
 )
 
 // KeyPair struct contains key pair public and private key

@@ -5,11 +5,11 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/stellar/go/keypair"
-	"github.com/stellar/go/services/horizon/internal/db2/core"
-	"github.com/stellar/go/services/horizon/internal/test"
-	"github.com/stellar/go/support/db"
-	"github.com/stellar/go/xdr"
+	"github.com/quantadex/stellar_go/keypair"
+	"github.com/quantadex/stellar_go/services/horizon/internal/db2/core"
+	"github.com/quantadex/stellar_go/services/horizon/internal/test"
+	"github.com/quantadex/stellar_go/support/db"
+	"github.com/quantadex/stellar_go/xdr"
 	"github.com/stretchr/testify/assert"
 )
 

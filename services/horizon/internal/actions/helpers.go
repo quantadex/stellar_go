@@ -8,17 +8,17 @@ import (
 	"fmt"
 
 	"github.com/go-chi/chi"
-	"github.com/stellar/go/amount"
-	"github.com/stellar/go/services/horizon/internal/assets"
-	"github.com/stellar/go/services/horizon/internal/db2"
-	"github.com/stellar/go/services/horizon/internal/ledger"
-	hProblem "github.com/stellar/go/services/horizon/internal/render/problem"
-	"github.com/stellar/go/services/horizon/internal/toid"
-	"github.com/stellar/go/strkey"
-	"github.com/stellar/go/support/errors"
-	"github.com/stellar/go/support/render/problem"
-	"github.com/stellar/go/support/time"
-	"github.com/stellar/go/xdr"
+	"github.com/quantadex/stellar_go/amount"
+	"github.com/quantadex/stellar_go/services/horizon/internal/assets"
+	"github.com/quantadex/stellar_go/services/horizon/internal/db2"
+	"github.com/quantadex/stellar_go/services/horizon/internal/ledger"
+	hProblem "github.com/quantadex/stellar_go/services/horizon/internal/render/problem"
+	"github.com/quantadex/stellar_go/services/horizon/internal/toid"
+	"github.com/quantadex/stellar_go/strkey"
+	"github.com/quantadex/stellar_go/support/errors"
+	"github.com/quantadex/stellar_go/support/render/problem"
+	"github.com/quantadex/stellar_go/support/time"
+	"github.com/quantadex/stellar_go/xdr"
 )
 
 const (

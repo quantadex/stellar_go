@@ -7,9 +7,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	b "github.com/stellar/go/build"
-	"github.com/stellar/go/services/internal/bridge-compliance-shared/http/helpers"
-	"github.com/stellar/go/services/internal/bridge-compliance-shared/protocols/bridge"
+	b "github.com/quantadex/stellar_go/build"
+	"github.com/quantadex/stellar_go/services/internal/bridge-compliance-shared/http/helpers"
+	"github.com/quantadex/stellar_go/services/internal/bridge-compliance-shared/protocols/bridge"
 )
 
 // Builder implements /builder endpoint

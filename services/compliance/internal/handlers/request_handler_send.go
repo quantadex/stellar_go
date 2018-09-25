@@ -6,15 +6,15 @@ import (
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
-	"github.com/stellar/go/address"
-	b "github.com/stellar/go/build"
-	"github.com/stellar/go/protocols/compliance"
-	"github.com/stellar/go/protocols/federation"
-	"github.com/stellar/go/services/compliance/internal/db"
-	shared "github.com/stellar/go/services/internal/bridge-compliance-shared"
-	"github.com/stellar/go/services/internal/bridge-compliance-shared/http/helpers"
-	callback "github.com/stellar/go/services/internal/bridge-compliance-shared/protocols/compliance"
-	"github.com/stellar/go/xdr"
+	"github.com/quantadex/stellar_go/address"
+	b "github.com/quantadex/stellar_go/build"
+	"github.com/quantadex/stellar_go/protocols/compliance"
+	"github.com/quantadex/stellar_go/protocols/federation"
+	"github.com/quantadex/stellar_go/services/compliance/internal/db"
+	shared "github.com/quantadex/stellar_go/services/internal/bridge-compliance-shared"
+	"github.com/quantadex/stellar_go/services/internal/bridge-compliance-shared/http/helpers"
+	callback "github.com/quantadex/stellar_go/services/internal/bridge-compliance-shared/protocols/compliance"
+	"github.com/quantadex/stellar_go/xdr"
 )
 
 // HandlerSend implements /send endpoint

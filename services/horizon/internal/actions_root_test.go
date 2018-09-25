@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/stellar/go/services/horizon/internal/test"
-	"github.com/stellar/go/protocols/horizon"
+	"github.com/quantadex/stellar_go/services/horizon/internal/test"
+	"github.com/quantadex/stellar_go/protocols/horizon"
 )
 
 func TestRootAction(t *testing.T) {

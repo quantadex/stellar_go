@@ -4,8 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/stellar/go/support/context/requestid"
-	"github.com/stellar/go/support/render/problem"
+	"github.com/quantadex/stellar_go/support/context/requestid"
+	"github.com/quantadex/stellar_go/support/render/problem"
 )
 
 // Inflate expands a problem with contextal information, including setting basic info.

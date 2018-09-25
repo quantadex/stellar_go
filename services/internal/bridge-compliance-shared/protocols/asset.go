@@ -3,9 +3,9 @@ package protocols
 import (
 	"fmt"
 
-	"github.com/stellar/go/build"
-	shared "github.com/stellar/go/services/internal/bridge-compliance-shared"
-	"github.com/stellar/go/support/errors"
+	"github.com/quantadex/stellar_go/build"
+	shared "github.com/quantadex/stellar_go/services/internal/bridge-compliance-shared"
+	"github.com/quantadex/stellar_go/support/errors"
 )
 
 // ToBaseAsset transforms Asset to github.com/stellar/go-stellar-base/build.Asset

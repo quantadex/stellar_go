@@ -4,14 +4,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/stellar/go/protocols/horizon"
-	"github.com/stellar/go/services/horizon/internal/db2"
-	"github.com/stellar/go/services/horizon/internal/db2/core"
-	"github.com/stellar/go/services/horizon/internal/db2/history"
-	"github.com/stellar/go/services/horizon/internal/render/sse"
-	"github.com/stellar/go/services/horizon/internal/resourceadapter"
-	"github.com/stellar/go/support/log"
-	"github.com/stellar/go/support/render/hal"
+	"github.com/quantadex/stellar_go/protocols/horizon"
+	"github.com/quantadex/stellar_go/services/horizon/internal/db2"
+	"github.com/quantadex/stellar_go/services/horizon/internal/db2/core"
+	"github.com/quantadex/stellar_go/services/horizon/internal/db2/history"
+	"github.com/quantadex/stellar_go/services/horizon/internal/render/sse"
+	"github.com/quantadex/stellar_go/services/horizon/internal/resourceadapter"
+	"github.com/quantadex/stellar_go/support/log"
+	"github.com/quantadex/stellar_go/support/render/hal"
 )
 
 // This file contains the actions:

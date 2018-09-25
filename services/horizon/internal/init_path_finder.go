@@ -1,7 +1,7 @@
 package horizon
 
 import (
-	"github.com/stellar/go/services/horizon/internal/simplepath"
+	"github.com/quantadex/stellar_go/services/horizon/internal/simplepath"
 )
 
 func initPathFinding(app *App) {

@@ -2,7 +2,7 @@ package assets
 
 import (
 	sq "github.com/Masterminds/squirrel"
-	"github.com/stellar/go/services/horizon/internal/db2"
+	"github.com/quantadex/stellar_go/services/horizon/internal/db2"
 )
 
 // AssetStatsR is the result from the AssetStatsQ query
