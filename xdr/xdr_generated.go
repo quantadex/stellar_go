@@ -435,7 +435,7 @@ var (
 //    case SIGNER_KEY_TYPE_ED25519:
 //        uint256 ed25519;
 //    case SIGNER_KEY_TYPE_PRE_AUTH_TX:
-//        /* Hash of Transaction structure */
+//        /* SHA-256 Hash of TransactionSignaturePayload structure */
 //        uint256 preAuthTx;
 //    case SIGNER_KEY_TYPE_HASH_X:
 //        /* Hash of random 256 bit preimage X */
@@ -964,9 +964,9 @@ var (
 
 // SequenceNumber is an XDR Typedef defines as:
 //
-//   typedef uint64 SequenceNumber;
+//   typedef int64 SequenceNumber;
 //
-type SequenceNumber Uint64
+type SequenceNumber Int64
 
 // MarshalBinary implements encoding.BinaryMarshaler.
 func (s SequenceNumber) MarshalBinary() ([]byte, error) {
@@ -1304,6 +1304,37 @@ var (
 	_ encoding.BinaryUnmarshaler = (*Price)(nil)
 )
 
+// Liabilities is an XDR Struct defines as:
+//
+//   struct Liabilities
+//    {
+//        int64 buying;
+//        int64 selling;
+//    };
+//
+type Liabilities struct {
+	Buying  Int64
+	Selling Int64
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (s Liabilities) MarshalBinary() ([]byte, error) {
+	b := new(bytes.Buffer)
+	_, err := Marshal(b, s)
+	return b.Bytes(), err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler.
+func (s *Liabilities) UnmarshalBinary(inp []byte) error {
+	_, err := Unmarshal(bytes.NewReader(inp), s)
+	return err
+}
+
+var (
+	_ encoding.BinaryMarshaler   = (*Liabilities)(nil)
+	_ encoding.BinaryUnmarshaler = (*Liabilities)(nil)
+)
+
 // ThresholdIndexes is an XDR Enum defines as:
 //
 //   enum ThresholdIndexes
@@ -1516,16 +1547,122 @@ var (
 //
 const MaskAccountFlags = 0x7
 
+// AccountEntryV1Ext is an XDR NestedUnion defines as:
+//
+//   union switch (int v)
+//                {
+//                case 0:
+//                    void;
+//                }
+//
+type AccountEntryV1Ext struct {
+	V int32
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u AccountEntryV1Ext) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of AccountEntryV1Ext
+func (u AccountEntryV1Ext) ArmForSwitch(sw int32) (string, bool) {
+	switch int32(sw) {
+	case 0:
+		return "", true
+	}
+	return "-", false
+}
+
+// NewAccountEntryV1Ext creates a new  AccountEntryV1Ext.
+func NewAccountEntryV1Ext(v int32, value interface{}) (result AccountEntryV1Ext, err error) {
+	result.V = v
+	switch int32(v) {
+	case 0:
+		// void
+	}
+	return
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (s AccountEntryV1Ext) MarshalBinary() ([]byte, error) {
+	b := new(bytes.Buffer)
+	_, err := Marshal(b, s)
+	return b.Bytes(), err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler.
+func (s *AccountEntryV1Ext) UnmarshalBinary(inp []byte) error {
+	_, err := Unmarshal(bytes.NewReader(inp), s)
+	return err
+}
+
+var (
+	_ encoding.BinaryMarshaler   = (*AccountEntryV1Ext)(nil)
+	_ encoding.BinaryUnmarshaler = (*AccountEntryV1Ext)(nil)
+)
+
+// AccountEntryV1 is an XDR NestedStruct defines as:
+//
+//   struct
+//            {
+//                Liabilities liabilities;
+//
+//                union switch (int v)
+//                {
+//                case 0:
+//                    void;
+//                }
+//                ext;
+//            }
+//
+type AccountEntryV1 struct {
+	Liabilities Liabilities
+	Ext         AccountEntryV1Ext
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (s AccountEntryV1) MarshalBinary() ([]byte, error) {
+	b := new(bytes.Buffer)
+	_, err := Marshal(b, s)
+	return b.Bytes(), err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler.
+func (s *AccountEntryV1) UnmarshalBinary(inp []byte) error {
+	_, err := Unmarshal(bytes.NewReader(inp), s)
+	return err
+}
+
+var (
+	_ encoding.BinaryMarshaler   = (*AccountEntryV1)(nil)
+	_ encoding.BinaryUnmarshaler = (*AccountEntryV1)(nil)
+)
+
 // AccountEntryExt is an XDR NestedUnion defines as:
 //
 //   union switch (int v)
 //        {
 //        case 0:
 //            void;
+//        case 1:
+//            struct
+//            {
+//                Liabilities liabilities;
+//
+//                union switch (int v)
+//                {
+//                case 0:
+//                    void;
+//                }
+//                ext;
+//            } v1;
 //        }
 //
 type AccountEntryExt struct {
-	V int32
+	V  int32
+	V1 *AccountEntryV1
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -1540,6 +1677,8 @@ func (u AccountEntryExt) ArmForSwitch(sw int32) (string, bool) {
 	switch int32(sw) {
 	case 0:
 		return "", true
+	case 1:
+		return "V1", true
 	}
 	return "-", false
 }
@@ -1550,7 +1689,39 @@ func NewAccountEntryExt(v int32, value interface{}) (result AccountEntryExt, err
 	switch int32(v) {
 	case 0:
 		// void
+	case 1:
+		tv, ok := value.(AccountEntryV1)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be AccountEntryV1")
+			return
+		}
+		result.V1 = &tv
 	}
+	return
+}
+
+// MustV1 retrieves the V1 value from the union,
+// panicing if the value is not set.
+func (u AccountEntryExt) MustV1() AccountEntryV1 {
+	val, ok := u.GetV1()
+
+	if !ok {
+		panic("arm V1 is not set")
+	}
+
+	return val
+}
+
+// GetV1 retrieves the V1 value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u AccountEntryExt) GetV1() (result AccountEntryV1, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.V))
+
+	if armName == "V1" {
+		result = *u.V1
+		ok = true
+	}
+
 	return
 }
 
@@ -1597,6 +1768,18 @@ var (
 //        {
 //        case 0:
 //            void;
+//        case 1:
+//            struct
+//            {
+//                Liabilities liabilities;
+//
+//                union switch (int v)
+//                {
+//                case 0:
+//                    void;
+//                }
+//                ext;
+//            } v1;
 //        }
 //        ext;
 //    };
@@ -1687,16 +1870,122 @@ var (
 //
 const MaskTrustlineFlags = 1
 
+// TrustLineEntryV1Ext is an XDR NestedUnion defines as:
+//
+//   union switch (int v)
+//                {
+//                case 0:
+//                    void;
+//                }
+//
+type TrustLineEntryV1Ext struct {
+	V int32
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u TrustLineEntryV1Ext) SwitchFieldName() string {
+	return "V"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of TrustLineEntryV1Ext
+func (u TrustLineEntryV1Ext) ArmForSwitch(sw int32) (string, bool) {
+	switch int32(sw) {
+	case 0:
+		return "", true
+	}
+	return "-", false
+}
+
+// NewTrustLineEntryV1Ext creates a new  TrustLineEntryV1Ext.
+func NewTrustLineEntryV1Ext(v int32, value interface{}) (result TrustLineEntryV1Ext, err error) {
+	result.V = v
+	switch int32(v) {
+	case 0:
+		// void
+	}
+	return
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (s TrustLineEntryV1Ext) MarshalBinary() ([]byte, error) {
+	b := new(bytes.Buffer)
+	_, err := Marshal(b, s)
+	return b.Bytes(), err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler.
+func (s *TrustLineEntryV1Ext) UnmarshalBinary(inp []byte) error {
+	_, err := Unmarshal(bytes.NewReader(inp), s)
+	return err
+}
+
+var (
+	_ encoding.BinaryMarshaler   = (*TrustLineEntryV1Ext)(nil)
+	_ encoding.BinaryUnmarshaler = (*TrustLineEntryV1Ext)(nil)
+)
+
+// TrustLineEntryV1 is an XDR NestedStruct defines as:
+//
+//   struct
+//            {
+//                Liabilities liabilities;
+//
+//                union switch (int v)
+//                {
+//                case 0:
+//                    void;
+//                }
+//                ext;
+//            }
+//
+type TrustLineEntryV1 struct {
+	Liabilities Liabilities
+	Ext         TrustLineEntryV1Ext
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (s TrustLineEntryV1) MarshalBinary() ([]byte, error) {
+	b := new(bytes.Buffer)
+	_, err := Marshal(b, s)
+	return b.Bytes(), err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler.
+func (s *TrustLineEntryV1) UnmarshalBinary(inp []byte) error {
+	_, err := Unmarshal(bytes.NewReader(inp), s)
+	return err
+}
+
+var (
+	_ encoding.BinaryMarshaler   = (*TrustLineEntryV1)(nil)
+	_ encoding.BinaryUnmarshaler = (*TrustLineEntryV1)(nil)
+)
+
 // TrustLineEntryExt is an XDR NestedUnion defines as:
 //
 //   union switch (int v)
 //        {
 //        case 0:
 //            void;
+//        case 1:
+//            struct
+//            {
+//                Liabilities liabilities;
+//
+//                union switch (int v)
+//                {
+//                case 0:
+//                    void;
+//                }
+//                ext;
+//            } v1;
 //        }
 //
 type TrustLineEntryExt struct {
-	V int32
+	V  int32
+	V1 *TrustLineEntryV1
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -1711,6 +2000,8 @@ func (u TrustLineEntryExt) ArmForSwitch(sw int32) (string, bool) {
 	switch int32(sw) {
 	case 0:
 		return "", true
+	case 1:
+		return "V1", true
 	}
 	return "-", false
 }
@@ -1721,7 +2012,39 @@ func NewTrustLineEntryExt(v int32, value interface{}) (result TrustLineEntryExt,
 	switch int32(v) {
 	case 0:
 		// void
+	case 1:
+		tv, ok := value.(TrustLineEntryV1)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be TrustLineEntryV1")
+			return
+		}
+		result.V1 = &tv
 	}
+	return
+}
+
+// MustV1 retrieves the V1 value from the union,
+// panicing if the value is not set.
+func (u TrustLineEntryExt) MustV1() TrustLineEntryV1 {
+	val, ok := u.GetV1()
+
+	if !ok {
+		panic("arm V1 is not set")
+	}
+
+	return val
+}
+
+// GetV1 retrieves the V1 value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u TrustLineEntryExt) GetV1() (result TrustLineEntryV1, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.V))
+
+	if armName == "V1" {
+		result = *u.V1
+		ok = true
+	}
+
 	return
 }
 
@@ -1760,6 +2083,18 @@ var (
 //        {
 //        case 0:
 //            void;
+//        case 1:
+//            struct
+//            {
+//                Liabilities liabilities;
+//
+//                union switch (int v)
+//                {
+//                case 0:
+//                    void;
+//                }
+//                ext;
+//            } v1;
 //        }
 //        ext;
 //    };
@@ -2462,6 +2797,7 @@ var (
 //        ACCOUNT_MERGE = 8,
 //        INFLATION = 9,
 //        MANAGE_DATA = 10,
+//        BUMP_SEQUENCE = 11,
 //        SETTLEMENT = 110
 //    };
 //
@@ -2479,6 +2815,7 @@ const (
 	OperationTypeAccountMerge       OperationType = 8
 	OperationTypeInflation          OperationType = 9
 	OperationTypeManageData         OperationType = 10
+	OperationTypeBumpSequence       OperationType = 11
 	OperationTypeSettlement         OperationType = 110
 )
 
@@ -2494,6 +2831,7 @@ var operationTypeMap = map[int32]string{
 	8:   "OperationTypeAccountMerge",
 	9:   "OperationTypeInflation",
 	10:  "OperationTypeManageData",
+	11:  "OperationTypeBumpSequence",
 	110: "OperationTypeSettlement",
 }
 
@@ -2998,6 +3336,35 @@ var (
 	_ encoding.BinaryUnmarshaler = (*ManageDataOp)(nil)
 )
 
+// BumpSequenceOp is an XDR Struct defines as:
+//
+//   struct BumpSequenceOp
+//    {
+//        SequenceNumber bumpTo;
+//    };
+//
+type BumpSequenceOp struct {
+	BumpTo SequenceNumber
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (s BumpSequenceOp) MarshalBinary() ([]byte, error) {
+	b := new(bytes.Buffer)
+	_, err := Marshal(b, s)
+	return b.Bytes(), err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler.
+func (s *BumpSequenceOp) UnmarshalBinary(inp []byte) error {
+	_, err := Unmarshal(bytes.NewReader(inp), s)
+	return err
+}
+
+var (
+	_ encoding.BinaryMarshaler   = (*BumpSequenceOp)(nil)
+	_ encoding.BinaryUnmarshaler = (*BumpSequenceOp)(nil)
+)
+
 // MatchedOrder is an XDR Struct defines as:
 //
 //   struct MatchedOrder
@@ -3096,6 +3463,8 @@ var (
 //            void;
 //        case MANAGE_DATA:
 //            ManageDataOp manageDataOp;
+//        case BUMP_SEQUENCE:
+//            BumpSequenceOp bumpSequenceOp;
 //        case SETTLEMENT:
 //             SettlementOp settlementOp;
 //        }
@@ -3112,6 +3481,7 @@ type OperationBody struct {
 	AllowTrustOp         *AllowTrustOp
 	Destination          *AccountId
 	ManageDataOp         *ManageDataOp
+	BumpSequenceOp       *BumpSequenceOp
 	SettlementOp         *SettlementOp
 }
 
@@ -3147,6 +3517,8 @@ func (u OperationBody) ArmForSwitch(sw int32) (string, bool) {
 		return "", true
 	case OperationTypeManageData:
 		return "ManageDataOp", true
+	case OperationTypeBumpSequence:
+		return "BumpSequenceOp", true
 	case OperationTypeSettlement:
 		return "SettlementOp", true
 	}
@@ -3229,6 +3601,13 @@ func NewOperationBody(aType OperationType, value interface{}) (result OperationB
 			return
 		}
 		result.ManageDataOp = &tv
+	case OperationTypeBumpSequence:
+		tv, ok := value.(BumpSequenceOp)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be BumpSequenceOp")
+			return
+		}
+		result.BumpSequenceOp = &tv
 	case OperationTypeSettlement:
 		tv, ok := value.(SettlementOp)
 		if !ok {
@@ -3490,6 +3869,31 @@ func (u OperationBody) GetManageDataOp() (result ManageDataOp, ok bool) {
 	return
 }
 
+// MustBumpSequenceOp retrieves the BumpSequenceOp value from the union,
+// panicing if the value is not set.
+func (u OperationBody) MustBumpSequenceOp() BumpSequenceOp {
+	val, ok := u.GetBumpSequenceOp()
+
+	if !ok {
+		panic("arm BumpSequenceOp is not set")
+	}
+
+	return val
+}
+
+// GetBumpSequenceOp retrieves the BumpSequenceOp value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u OperationBody) GetBumpSequenceOp() (result BumpSequenceOp, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "BumpSequenceOp" {
+		result = *u.BumpSequenceOp
+		ok = true
+	}
+
+	return
+}
+
 // MustSettlementOp retrieves the SettlementOp value from the union,
 // panicing if the value is not set.
 func (u OperationBody) MustSettlementOp() SettlementOp {
@@ -3566,6 +3970,8 @@ var (
 //            void;
 //        case MANAGE_DATA:
 //            ManageDataOp manageDataOp;
+//        case BUMP_SEQUENCE:
+//            BumpSequenceOp bumpSequenceOp;
 //        case SETTLEMENT:
 //             SettlementOp settlementOp;
 //        }
@@ -5530,10 +5936,13 @@ var (
 //        // codes considered as "success" for the operation
 //        ACCOUNT_MERGE_SUCCESS = 0,
 //        // codes considered as "failure" for the operation
-//        ACCOUNT_MERGE_MALFORMED = -1,      // can't merge onto itself
-//        ACCOUNT_MERGE_NO_ACCOUNT = -2,     // destination does not exist
-//        ACCOUNT_MERGE_IMMUTABLE_SET = -3,  // source account has AUTH_IMMUTABLE set
-//        ACCOUNT_MERGE_HAS_SUB_ENTRIES = -4 // account has trust lines/offers
+//        ACCOUNT_MERGE_MALFORMED = -1,       // can't merge onto itself
+//        ACCOUNT_MERGE_NO_ACCOUNT = -2,      // destination does not exist
+//        ACCOUNT_MERGE_IMMUTABLE_SET = -3,   // source account has AUTH_IMMUTABLE set
+//        ACCOUNT_MERGE_HAS_SUB_ENTRIES = -4, // account has trust lines/offers
+//        ACCOUNT_MERGE_SEQNUM_TOO_FAR = -5,  // sequence number is over max allowed
+//        ACCOUNT_MERGE_DEST_FULL = -6        // can't add source balance to
+//                                            // destination balance
 //    };
 //
 type AccountMergeResultCode int32
@@ -5544,6 +5953,8 @@ const (
 	AccountMergeResultCodeAccountMergeNoAccount     AccountMergeResultCode = -2
 	AccountMergeResultCodeAccountMergeImmutableSet  AccountMergeResultCode = -3
 	AccountMergeResultCodeAccountMergeHasSubEntries AccountMergeResultCode = -4
+	AccountMergeResultCodeAccountMergeSeqnumTooFar  AccountMergeResultCode = -5
+	AccountMergeResultCodeAccountMergeDestFull      AccountMergeResultCode = -6
 )
 
 var accountMergeResultCodeMap = map[int32]string{
@@ -5552,6 +5963,8 @@ var accountMergeResultCodeMap = map[int32]string{
 	-2: "AccountMergeResultCodeAccountMergeNoAccount",
 	-3: "AccountMergeResultCodeAccountMergeImmutableSet",
 	-4: "AccountMergeResultCodeAccountMergeHasSubEntries",
+	-5: "AccountMergeResultCodeAccountMergeSeqnumTooFar",
+	-6: "AccountMergeResultCodeAccountMergeDestFull",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -5860,10 +6273,12 @@ var (
 //        // codes considered as "success" for the operation
 //        MANAGE_DATA_SUCCESS = 0,
 //        // codes considered as "failure" for the operation
-//        MANAGE_DATA_NOT_SUPPORTED_YET = -1, // The network hasn't moved to this protocol change yet
-//        MANAGE_DATA_NAME_NOT_FOUND = -2,    // Trying to remove a Data Entry that isn't there
-//        MANAGE_DATA_LOW_RESERVE = -3,       // not enough funds to create a new Data Entry
-//        MANAGE_DATA_INVALID_NAME = -4       // Name not a valid string
+//        MANAGE_DATA_NOT_SUPPORTED_YET =
+//            -1, // The network hasn't moved to this protocol change yet
+//        MANAGE_DATA_NAME_NOT_FOUND =
+//            -2, // Trying to remove a Data Entry that isn't there
+//        MANAGE_DATA_LOW_RESERVE = -3, // not enough funds to create a new Data Entry
+//        MANAGE_DATA_INVALID_NAME = -4 // Name not a valid string
 //    };
 //
 type ManageDataResultCode int32
@@ -6169,28 +6584,145 @@ var (
 	_ encoding.BinaryUnmarshaler = (*SettlementResult)(nil)
 )
 
+// BumpSequenceResultCode is an XDR Enum defines as:
+//
+//   enum BumpSequenceResultCode
+//    {
+//        // codes considered as "success" for the operation
+//        BUMP_SEQUENCE_SUCCESS = 0,
+//        // codes considered as "failure" for the operation
+//        BUMP_SEQUENCE_BAD_SEQ = -1 // `bumpTo` is not within bounds
+//    };
+//
+type BumpSequenceResultCode int32
+
+const (
+	BumpSequenceResultCodeBumpSequenceSuccess BumpSequenceResultCode = 0
+	BumpSequenceResultCodeBumpSequenceBadSeq  BumpSequenceResultCode = -1
+)
+
+var bumpSequenceResultCodeMap = map[int32]string{
+	0:  "BumpSequenceResultCodeBumpSequenceSuccess",
+	-1: "BumpSequenceResultCodeBumpSequenceBadSeq",
+}
+
+// ValidEnum validates a proposed value for this enum.  Implements
+// the Enum interface for BumpSequenceResultCode
+func (e BumpSequenceResultCode) ValidEnum(v int32) bool {
+	_, ok := bumpSequenceResultCodeMap[v]
+	return ok
+}
+
+// String returns the name of `e`
+func (e BumpSequenceResultCode) String() string {
+	name, _ := bumpSequenceResultCodeMap[int32(e)]
+	return name
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (s BumpSequenceResultCode) MarshalBinary() ([]byte, error) {
+	b := new(bytes.Buffer)
+	_, err := Marshal(b, s)
+	return b.Bytes(), err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler.
+func (s *BumpSequenceResultCode) UnmarshalBinary(inp []byte) error {
+	_, err := Unmarshal(bytes.NewReader(inp), s)
+	return err
+}
+
+var (
+	_ encoding.BinaryMarshaler   = (*BumpSequenceResultCode)(nil)
+	_ encoding.BinaryUnmarshaler = (*BumpSequenceResultCode)(nil)
+)
+
+// BumpSequenceResult is an XDR Union defines as:
+//
+//   union BumpSequenceResult switch (BumpSequenceResultCode code)
+//    {
+//    case BUMP_SEQUENCE_SUCCESS:
+//        void;
+//    default:
+//        void;
+//    };
+//
+type BumpSequenceResult struct {
+	Code BumpSequenceResultCode
+}
+
+// SwitchFieldName returns the field name in which this union's
+// discriminant is stored
+func (u BumpSequenceResult) SwitchFieldName() string {
+	return "Code"
+}
+
+// ArmForSwitch returns which field name should be used for storing
+// the value for an instance of BumpSequenceResult
+func (u BumpSequenceResult) ArmForSwitch(sw int32) (string, bool) {
+	switch BumpSequenceResultCode(sw) {
+	case BumpSequenceResultCodeBumpSequenceSuccess:
+		return "", true
+	default:
+		return "", true
+	}
+}
+
+// NewBumpSequenceResult creates a new  BumpSequenceResult.
+func NewBumpSequenceResult(code BumpSequenceResultCode, value interface{}) (result BumpSequenceResult, err error) {
+	result.Code = code
+	switch BumpSequenceResultCode(code) {
+	case BumpSequenceResultCodeBumpSequenceSuccess:
+		// void
+	default:
+		// void
+	}
+	return
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (s BumpSequenceResult) MarshalBinary() ([]byte, error) {
+	b := new(bytes.Buffer)
+	_, err := Marshal(b, s)
+	return b.Bytes(), err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler.
+func (s *BumpSequenceResult) UnmarshalBinary(inp []byte) error {
+	_, err := Unmarshal(bytes.NewReader(inp), s)
+	return err
+}
+
+var (
+	_ encoding.BinaryMarshaler   = (*BumpSequenceResult)(nil)
+	_ encoding.BinaryUnmarshaler = (*BumpSequenceResult)(nil)
+)
+
 // OperationResultCode is an XDR Enum defines as:
 //
 //   enum OperationResultCode
 //    {
 //        opINNER = 0, // inner object result is valid
 //
-//        opBAD_AUTH = -1,  // too few valid signatures / wrong network
-//        opNO_ACCOUNT = -2 // source account was not found
+//        opBAD_AUTH = -1,     // too few valid signatures / wrong network
+//        opNO_ACCOUNT = -2,   // source account was not found
+//        opNOT_SUPPORTED = -3 // operation not supported at this time
 //    };
 //
 type OperationResultCode int32
 
 const (
-	OperationResultCodeOpInner     OperationResultCode = 0
-	OperationResultCodeOpBadAuth   OperationResultCode = -1
-	OperationResultCodeOpNoAccount OperationResultCode = -2
+	OperationResultCodeOpInner        OperationResultCode = 0
+	OperationResultCodeOpBadAuth      OperationResultCode = -1
+	OperationResultCodeOpNoAccount    OperationResultCode = -2
+	OperationResultCodeOpNotSupported OperationResultCode = -3
 )
 
 var operationResultCodeMap = map[int32]string{
 	0:  "OperationResultCodeOpInner",
 	-1: "OperationResultCodeOpBadAuth",
 	-2: "OperationResultCodeOpNoAccount",
+	-3: "OperationResultCodeOpNotSupported",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -6250,6 +6782,8 @@ var (
 //            InflationResult inflationResult;
 //        case MANAGE_DATA:
 //            ManageDataResult manageDataResult;
+//        case BUMP_SEQUENCE:
+//            BumpSequenceResult bumpSeqResult;
 //        case SETTLEMENT:
 //             SettlementResult settlementResult;
 //        }
@@ -6267,6 +6801,7 @@ type OperationResultTr struct {
 	AccountMergeResult       *AccountMergeResult
 	InflationResult          *InflationResult
 	ManageDataResult         *ManageDataResult
+	BumpSeqResult            *BumpSequenceResult
 	SettlementResult         *SettlementResult
 }
 
@@ -6302,6 +6837,8 @@ func (u OperationResultTr) ArmForSwitch(sw int32) (string, bool) {
 		return "InflationResult", true
 	case OperationTypeManageData:
 		return "ManageDataResult", true
+	case OperationTypeBumpSequence:
+		return "BumpSeqResult", true
 	case OperationTypeSettlement:
 		return "SettlementResult", true
 	}
@@ -6389,6 +6926,13 @@ func NewOperationResultTr(aType OperationType, value interface{}) (result Operat
 			return
 		}
 		result.ManageDataResult = &tv
+	case OperationTypeBumpSequence:
+		tv, ok := value.(BumpSequenceResult)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be BumpSequenceResult")
+			return
+		}
+		result.BumpSeqResult = &tv
 	case OperationTypeSettlement:
 		tv, ok := value.(SettlementResult)
 		if !ok {
@@ -6675,6 +7219,31 @@ func (u OperationResultTr) GetManageDataResult() (result ManageDataResult, ok bo
 	return
 }
 
+// MustBumpSeqResult retrieves the BumpSeqResult value from the union,
+// panicing if the value is not set.
+func (u OperationResultTr) MustBumpSeqResult() BumpSequenceResult {
+	val, ok := u.GetBumpSeqResult()
+
+	if !ok {
+		panic("arm BumpSeqResult is not set")
+	}
+
+	return val
+}
+
+// GetBumpSeqResult retrieves the BumpSeqResult value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u OperationResultTr) GetBumpSeqResult() (result BumpSequenceResult, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "BumpSeqResult" {
+		result = *u.BumpSeqResult
+		ok = true
+	}
+
+	return
+}
+
 // MustSettlementResult retrieves the SettlementResult value from the union,
 // panicing if the value is not set.
 func (u OperationResultTr) MustSettlementResult() SettlementResult {
@@ -6747,6 +7316,8 @@ var (
 //            InflationResult inflationResult;
 //        case MANAGE_DATA:
 //            ManageDataResult manageDataResult;
+//        case BUMP_SEQUENCE:
+//            BumpSequenceResult bumpSeqResult;
 //        case SETTLEMENT:
 //             SettlementResult settlementResult;
 //        }
@@ -7399,7 +7970,8 @@ var (
 //    {
 //        LEDGER_UPGRADE_VERSION = 1,
 //        LEDGER_UPGRADE_BASE_FEE = 2,
-//        LEDGER_UPGRADE_MAX_TX_SET_SIZE = 3
+//        LEDGER_UPGRADE_MAX_TX_SET_SIZE = 3,
+//        LEDGER_UPGRADE_BASE_RESERVE = 4
 //    };
 //
 type LedgerUpgradeType int32
@@ -7408,12 +7980,14 @@ const (
 	LedgerUpgradeTypeLedgerUpgradeVersion      LedgerUpgradeType = 1
 	LedgerUpgradeTypeLedgerUpgradeBaseFee      LedgerUpgradeType = 2
 	LedgerUpgradeTypeLedgerUpgradeMaxTxSetSize LedgerUpgradeType = 3
+	LedgerUpgradeTypeLedgerUpgradeBaseReserve  LedgerUpgradeType = 4
 )
 
 var ledgerUpgradeTypeMap = map[int32]string{
 	1: "LedgerUpgradeTypeLedgerUpgradeVersion",
 	2: "LedgerUpgradeTypeLedgerUpgradeBaseFee",
 	3: "LedgerUpgradeTypeLedgerUpgradeMaxTxSetSize",
+	4: "LedgerUpgradeTypeLedgerUpgradeBaseReserve",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -7457,6 +8031,8 @@ var (
 //        uint32 newBaseFee; // update baseFee
 //    case LEDGER_UPGRADE_MAX_TX_SET_SIZE:
 //        uint32 newMaxTxSetSize; // update maxTxSetSize
+//    case LEDGER_UPGRADE_BASE_RESERVE:
+//        uint32 newBaseReserve; // update baseReserve
 //    };
 //
 type LedgerUpgrade struct {
@@ -7464,6 +8040,7 @@ type LedgerUpgrade struct {
 	NewLedgerVersion *Uint32
 	NewBaseFee       *Uint32
 	NewMaxTxSetSize  *Uint32
+	NewBaseReserve   *Uint32
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -7482,6 +8059,8 @@ func (u LedgerUpgrade) ArmForSwitch(sw int32) (string, bool) {
 		return "NewBaseFee", true
 	case LedgerUpgradeTypeLedgerUpgradeMaxTxSetSize:
 		return "NewMaxTxSetSize", true
+	case LedgerUpgradeTypeLedgerUpgradeBaseReserve:
+		return "NewBaseReserve", true
 	}
 	return "-", false
 }
@@ -7511,6 +8090,13 @@ func NewLedgerUpgrade(aType LedgerUpgradeType, value interface{}) (result Ledger
 			return
 		}
 		result.NewMaxTxSetSize = &tv
+	case LedgerUpgradeTypeLedgerUpgradeBaseReserve:
+		tv, ok := value.(Uint32)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be Uint32")
+			return
+		}
+		result.NewBaseReserve = &tv
 	}
 	return
 }
@@ -7584,6 +8170,31 @@ func (u LedgerUpgrade) GetNewMaxTxSetSize() (result Uint32, ok bool) {
 
 	if armName == "NewMaxTxSetSize" {
 		result = *u.NewMaxTxSetSize
+		ok = true
+	}
+
+	return
+}
+
+// MustNewBaseReserve retrieves the NewBaseReserve value from the union,
+// panicing if the value is not set.
+func (u LedgerUpgrade) MustNewBaseReserve() Uint32 {
+	val, ok := u.GetNewBaseReserve()
+
+	if !ok {
+		panic("arm NewBaseReserve is not set")
+	}
+
+	return val
+}
+
+// GetNewBaseReserve retrieves the NewBaseReserve value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u LedgerUpgrade) GetNewBaseReserve() (result Uint32, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "NewBaseReserve" {
+		result = *u.NewBaseReserve
 		ok = true
 	}
 
@@ -8958,17 +9569,51 @@ var (
 	_ encoding.BinaryUnmarshaler = (*OperationMeta)(nil)
 )
 
+// TransactionMetaV1 is an XDR Struct defines as:
+//
+//   struct TransactionMetaV1
+//    {
+//        LedgerEntryChanges txChanges; // tx level changes if any
+//        OperationMeta operations<>; // meta for each operation
+//    };
+//
+type TransactionMetaV1 struct {
+	TxChanges  LedgerEntryChanges
+	Operations []OperationMeta
+}
+
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (s TransactionMetaV1) MarshalBinary() ([]byte, error) {
+	b := new(bytes.Buffer)
+	_, err := Marshal(b, s)
+	return b.Bytes(), err
+}
+
+// UnmarshalBinary implements encoding.BinaryUnmarshaler.
+func (s *TransactionMetaV1) UnmarshalBinary(inp []byte) error {
+	_, err := Unmarshal(bytes.NewReader(inp), s)
+	return err
+}
+
+var (
+	_ encoding.BinaryMarshaler   = (*TransactionMetaV1)(nil)
+	_ encoding.BinaryUnmarshaler = (*TransactionMetaV1)(nil)
+)
+
 // TransactionMeta is an XDR Union defines as:
 //
 //   union TransactionMeta switch (int v)
 //    {
 //    case 0:
 //        OperationMeta operations<>;
+//    case 1:
+//        TransactionMetaV1 v1;
 //    };
 //
 type TransactionMeta struct {
 	V          int32
 	Operations *[]OperationMeta
+	V1         *TransactionMetaV1
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -8983,6 +9628,8 @@ func (u TransactionMeta) ArmForSwitch(sw int32) (string, bool) {
 	switch int32(sw) {
 	case 0:
 		return "Operations", true
+	case 1:
+		return "V1", true
 	}
 	return "-", false
 }
@@ -8998,6 +9645,13 @@ func NewTransactionMeta(v int32, value interface{}) (result TransactionMeta, err
 			return
 		}
 		result.Operations = &tv
+	case 1:
+		tv, ok := value.(TransactionMetaV1)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be TransactionMetaV1")
+			return
+		}
+		result.V1 = &tv
 	}
 	return
 }
@@ -9021,6 +9675,31 @@ func (u TransactionMeta) GetOperations() (result []OperationMeta, ok bool) {
 
 	if armName == "Operations" {
 		result = *u.Operations
+		ok = true
+	}
+
+	return
+}
+
+// MustV1 retrieves the V1 value from the union,
+// panicing if the value is not set.
+func (u TransactionMeta) MustV1() TransactionMetaV1 {
+	val, ok := u.GetV1()
+
+	if !ok {
+		panic("arm V1 is not set")
+	}
+
+	return val
+}
+
+// GetV1 retrieves the V1 value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u TransactionMeta) GetV1() (result TransactionMetaV1, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.V))
+
+	if armName == "V1" {
+		result = *u.V1
 		ok = true
 	}
 
@@ -9597,7 +10276,7 @@ var (
 //    case GET_PEERS:
 //        void;
 //    case PEERS:
-//        PeerAddress peers<>;
+//        PeerAddress peers<100>;
 //
 //    case GET_TX_SET:
 //        uint256 txSetHash;
@@ -9624,7 +10303,7 @@ type StellarMessage struct {
 	Hello           *Hello
 	Auth            *Auth
 	DontHave        *DontHave
-	Peers           *[]PeerAddress
+	Peers           *[]PeerAddress `xdrmaxsize:"100"`
 	TxSetHash       *Uint256
 	TxSet           *TransactionSet
 	Transaction     *TransactionEnvelope
