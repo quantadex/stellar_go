@@ -1,5 +1,5 @@
-hash: 7eac67607acc35ee775cfd4301d326fa205f7d0e95836f36dd934c5ccd9fc171
-updated: 2017-12-22T11:51:26.139292-09:00
+hash: 392ff499db0cfdd0a7b3f05cd4e3b6b909a739dd48ea123c5f5a03f004fb1875
+updated: 2018-09-30T03:12:15.994674-07:00
 imports:
 - name: bitbucket.org/ww/goautoneg
   version: 75cd24fc2f2c2a2088577d12123ddee5f54e0675
@@ -43,6 +43,8 @@ imports:
   - private/waiter
   - service/s3
   - service/sts
+- name: github.com/bartekn/go-bip39
+  version: a05967ea095d81c8fe4833776774cfaff8e5036c
 - name: github.com/btcsuite/btcd
   version: 4803a8291c92a1d2d41041b942a9a9e37deab065
   subpackages:
@@ -231,7 +233,7 @@ imports:
   subpackages:
   - xdr3
 - name: github.com/onsi/ginkgo
-  version: 6c46eb8334b30dc55b42f1a1c725d5ce97375390
+  version: 9008c7b79f9636c46a0a945141020124702f0ecf
   subpackages:
   - config
   - extensions/table
@@ -252,7 +254,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: d35dcfdbfd01eaabf8da0b6b36f111ff953b68cb
+  version: fcebc62b30a95351cb5e56d8a97b6e67cbb85353
   subpackages:
   - format
   - internal/assertion
@@ -349,8 +351,6 @@ imports:
   - suite
 - name: github.com/tyler-smith/go-bip32
   version: 2c9cfd17756470a0b7c3e4b7954bae7d11035504
-- name: github.com/bartekn/go-bip39
-  version: a05967ea095d81c8fe4833776774cfaff8e5036c
 - name: github.com/tylerb/graceful
   version: 7116c7a8115899e80197cd9e0b97998c0f97ed8e
   repo: https://github.com/tylerb/graceful
@@ -373,7 +373,7 @@ imports:
   version: f06f290571ce81ab347174c6f7ad2e1865af41a7
   repo: https://github.com/xeipuuv/gojsonschema
 - name: github.com/y0ssar1an/q
-  version: 392ac3089fcf8c70ebbe85f4c29778b7ebe27a9f
+  version: 4b5d05b1e093249d7f51e3a72677a7003a534b40
 - name: github.com/yalp/jsonpath
   version: 31a79c7593bb93eb10b163650d4a3e6ca190e4dc
   repo: https://github.com/yalp/jsonpath
