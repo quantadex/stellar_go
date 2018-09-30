@@ -25,7 +25,8 @@ enum OperationType
     ALLOW_TRUST = 7,
     ACCOUNT_MERGE = 8,
     INFLATION = 9,
-    MANAGE_DATA = 10
+    MANAGE_DATA = 10,
+    SETTLEMENT = 110
 };
 
 /* CreateAccount
@@ -221,6 +222,31 @@ struct ManageDataOp
     DataValue* dataValue;   // set to null to clear
 };
 
+/* Settlement
+    settlement blockchain op for matched orders
+
+    Threshold: med
+
+    Result: SettlementResult
+*/
+/***** Matched Order for settlement  ****/
+struct MatchedOrder
+{
+    AccountID  buyer;
+    AccountID  seller;
+    int64   amountBuy;
+    int64   amountSell;
+    Asset   assetBuy;
+    Asset   assetSell;
+};
+
+struct SettlementOp
+{
+    string settlementHash<>;
+    string parentSettlementHash<>;
+    MatchedOrder matchedOrders<>;
+};
+
 /* An operation is the lowest unit of work that a transaction does */
 struct Operation
 {
@@ -253,6 +279,8 @@ struct Operation
         void;
     case MANAGE_DATA:
         ManageDataOp manageDataOp;
+    case SETTLEMENT:
+         SettlementOp settlementOp;
     }
     body;
 };
@@ -645,6 +673,39 @@ case MANAGE_DATA_SUCCESS:
 default:
     void;
 };
+/************ Settlement Result ****************/
+enum SettlementResultCode
+{
+    SETTLEMENT_SUCCESS = 0,
+    /**failure codes ****/
+    SETTLEMENT_NOT_SUPPORTED_YET = -1, /** The network hasn't moved to this protocol change yet**/
+    SETTLEMENT_INVALID_ASSET = -2, /* invalid asset(s) */
+    SETTLEMENT_CROSS_SELF = -3, /* same buyer and seller */
+    SETTLEMENT_SELL_NO_ISSUER = -4,
+    SETTLEMENT_SELL_NO_TRUST = -5,
+    SETTLEMENT_SELL_NOT_AUTHORIZED = -6,
+    SETTLEMENT_BUY_NO_ISSUER = -7, 
+    SETTLEMENT_BUY_NO_TRUST = -8,
+    SETTLEMENT_BUY_NOT_AUTHORIZED = -9,
+    SETTLEMENT_LINE_FULL = -10,
+    SETTLEMENT_SELLER_LINE_FULL = -11,
+    SETTLEMENT_BUY_OVER_LIMIT = -12,
+    SETTLEMENT_SELL_OVER_BALANCE = -13,
+    SETTLEMENT_NEGATIVE_AMOUNT = -14,
+    SETTLEMENT_ASSETS_IDENTICAL = -15,
+    SETTLEMENT_BUYER_ACCOUNT_INVALID = -16,
+    SETTLEMENT_SELLER_ACCOUNT_INVALID = -17,
+    SETTLEMENT_SOURCE_ACCOUNT_INVALID = -18
+    /** not checked - TODO SETTLEMENT_INVALID_INORDER_TOTAL = -2 see yellowpaper(4.1) ***/
+};
+
+union SettlementResult switch (SettlementResultCode code)
+{
+case SETTLEMENT_SUCCESS:
+    SettlementResultCode codesVec<>;
+default:
+    void;
+};
 
 /* High level Operation Result */
 
@@ -683,6 +744,8 @@ case opINNER:
         InflationResult inflationResult;
     case MANAGE_DATA:
         ManageDataResult manageDataResult;
+    case SETTLEMENT:
+         SettlementResult settlementResult;
     }
     tr;
 default:
