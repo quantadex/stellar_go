@@ -12,8 +12,7 @@ import (
 	"github.com/stellar/go/support/app"
 
 	"github.com/garyburd/redigo/redis"
-	metrics "github.com/rcrowley/go-metrics"
-	"github.com/stellar/go/build"
+	"github.com/rcrowley/go-metrics"
 	"github.com/stellar/go/services/horizon/internal/db2/core"
 	"github.com/stellar/go/services/horizon/internal/db2/history"
 	"github.com/stellar/go/services/horizon/internal/ingest"
@@ -26,7 +25,8 @@ import (
 	"github.com/stellar/go/support/db"
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
-	graceful "gopkg.in/tylerb/graceful.v1"
+	"gopkg.in/tylerb/graceful.v1"
+	"github.com/spf13/viper"
 )
 
 // App represents the root of the state of a horizon instance.
@@ -60,10 +60,9 @@ type App struct {
 
 // NewApp constructs an new App instance from the provided config.
 func NewApp(config Config) (*App, error) {
-
 	result := &App{config: config}
 	result.horizonVersion = app.Version()
-	result.networkPassphrase = build.TestNetwork.Passphrase
+	result.networkPassphrase =  viper.GetString("network-passphrase")
 	result.ticks = time.NewTicker(1 * time.Second)
 	result.init()
 	return result, nil

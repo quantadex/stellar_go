@@ -14,6 +14,7 @@ func initIngester(app *App) {
 	if app.networkPassphrase == "" {
 		log.Fatal("Cannot start ingestion without network passphrase.  Please confirm connectivity with stellar-core.")
 	}
+	println(app.networkPassphrase)
 
 	app.ingester = ingest.New(
 		app.networkPassphrase,

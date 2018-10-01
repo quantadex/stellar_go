@@ -12,7 +12,7 @@ import (
 
 func initSubmissionSystem(app *App) {
 	cq := &core.Q{Session: app.CoreSession(nil)}
-
+	println("Subsystem: ", app.networkPassphrase)
 	app.submitter = &txsub.System{
 		Pending:         txsub.NewDefaultSubmissionList(),
 		Submitter:       txsub.NewDefaultSubmitter(http.DefaultClient, app.config.StellarCoreURL),
