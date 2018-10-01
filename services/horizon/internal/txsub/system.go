@@ -61,6 +61,8 @@ func (sys *System) Submit(ctx context.Context, env string) (result <-chan Result
 		return
 	}
 
+	println("hash", info.Hash, sys.NetworkPassphrase)
+
 	// check the configured result provider for an existing result
 	r := sys.Results.ResultByHash(ctx, info.Hash)
 
