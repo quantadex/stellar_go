@@ -80,21 +80,21 @@ type Int64 int64
 //   enum CryptoKeyType
 //    {
 //        KEY_TYPE_ED25519 = 0,
-//        KEY_TYPE_HASH_TX = 1,
+//        KEY_TYPE_PRE_AUTH_TX = 1,
 //        KEY_TYPE_HASH_X = 2
 //    };
 //
 type CryptoKeyType int32
 
 const (
-	CryptoKeyTypeKeyTypeEd25519 CryptoKeyType = 0
-	CryptoKeyTypeKeyTypeHashTx  CryptoKeyType = 1
-	CryptoKeyTypeKeyTypeHashX   CryptoKeyType = 2
+	CryptoKeyTypeKeyTypeEd25519   CryptoKeyType = 0
+	CryptoKeyTypeKeyTypePreAuthTx CryptoKeyType = 1
+	CryptoKeyTypeKeyTypeHashX     CryptoKeyType = 2
 )
 
 var cryptoKeyTypeMap = map[int32]string{
 	0: "CryptoKeyTypeKeyTypeEd25519",
-	1: "CryptoKeyTypeKeyTypeHashTx",
+	1: "CryptoKeyTypeKeyTypePreAuthTx",
 	2: "CryptoKeyTypeKeyTypeHashX",
 }
 
@@ -146,21 +146,21 @@ func (e PublicKeyType) String() string {
 //   enum SignerKeyType
 //    {
 //        SIGNER_KEY_TYPE_ED25519 = KEY_TYPE_ED25519,
-//        SIGNER_KEY_TYPE_HASH_TX = KEY_TYPE_HASH_TX,
+//        SIGNER_KEY_TYPE_PRE_AUTH_TX = KEY_TYPE_PRE_AUTH_TX,
 //        SIGNER_KEY_TYPE_HASH_X = KEY_TYPE_HASH_X
 //    };
 //
 type SignerKeyType int32
 
 const (
-	SignerKeyTypeSignerKeyTypeEd25519 SignerKeyType = 0
-	SignerKeyTypeSignerKeyTypeHashTx  SignerKeyType = 1
-	SignerKeyTypeSignerKeyTypeHashX   SignerKeyType = 2
+	SignerKeyTypeSignerKeyTypeEd25519   SignerKeyType = 0
+	SignerKeyTypeSignerKeyTypePreAuthTx SignerKeyType = 1
+	SignerKeyTypeSignerKeyTypeHashX     SignerKeyType = 2
 )
 
 var signerKeyTypeMap = map[int32]string{
 	0: "SignerKeyTypeSignerKeyTypeEd25519",
-	1: "SignerKeyTypeSignerKeyTypeHashTx",
+	1: "SignerKeyTypeSignerKeyTypePreAuthTx",
 	2: "SignerKeyTypeSignerKeyTypeHashX",
 }
 
@@ -252,19 +252,19 @@ func (u PublicKey) GetEd25519() (result Uint256, ok bool) {
 //    {
 //    case SIGNER_KEY_TYPE_ED25519:
 //        uint256 ed25519;
-//    case SIGNER_KEY_TYPE_HASH_TX:
+//    case SIGNER_KEY_TYPE_PRE_AUTH_TX:
 //        /* Hash of Transaction structure */
-//        uint256 hashTx;
+//        uint256 preAuthTx;
 //    case SIGNER_KEY_TYPE_HASH_X:
 //        /* Hash of random 256 bit preimage X */
 //        uint256 hashX;
 //    };
 //
 type SignerKey struct {
-	Type    SignerKeyType
-	Ed25519 *Uint256
-	HashTx  *Uint256
-	HashX   *Uint256
+	Type      SignerKeyType
+	Ed25519   *Uint256
+	PreAuthTx *Uint256
+	HashX     *Uint256
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -279,8 +279,8 @@ func (u SignerKey) ArmForSwitch(sw int32) (string, bool) {
 	switch SignerKeyType(sw) {
 	case SignerKeyTypeSignerKeyTypeEd25519:
 		return "Ed25519", true
-	case SignerKeyTypeSignerKeyTypeHashTx:
-		return "HashTx", true
+	case SignerKeyTypeSignerKeyTypePreAuthTx:
+		return "PreAuthTx", true
 	case SignerKeyTypeSignerKeyTypeHashX:
 		return "HashX", true
 	}
@@ -298,13 +298,13 @@ func NewSignerKey(aType SignerKeyType, value interface{}) (result SignerKey, err
 			return
 		}
 		result.Ed25519 = &tv
-	case SignerKeyTypeSignerKeyTypeHashTx:
+	case SignerKeyTypeSignerKeyTypePreAuthTx:
 		tv, ok := value.(Uint256)
 		if !ok {
 			err = fmt.Errorf("invalid value, must be Uint256")
 			return
 		}
-		result.HashTx = &tv
+		result.PreAuthTx = &tv
 	case SignerKeyTypeSignerKeyTypeHashX:
 		tv, ok := value.(Uint256)
 		if !ok {
@@ -341,25 +341,25 @@ func (u SignerKey) GetEd25519() (result Uint256, ok bool) {
 	return
 }
 
-// MustHashTx retrieves the HashTx value from the union,
+// MustPreAuthTx retrieves the PreAuthTx value from the union,
 // panicing if the value is not set.
-func (u SignerKey) MustHashTx() Uint256 {
-	val, ok := u.GetHashTx()
+func (u SignerKey) MustPreAuthTx() Uint256 {
+	val, ok := u.GetPreAuthTx()
 
 	if !ok {
-		panic("arm HashTx is not set")
+		panic("arm PreAuthTx is not set")
 	}
 
 	return val
 }
 
-// GetHashTx retrieves the HashTx value from the union,
+// GetPreAuthTx retrieves the PreAuthTx value from the union,
 // returning ok if the union's switch indicated the value is valid.
-func (u SignerKey) GetHashTx() (result Uint256, ok bool) {
+func (u SignerKey) GetPreAuthTx() (result Uint256, ok bool) {
 	armName, _ := u.ArmForSwitch(int32(u.Type))
 
-	if armName == "HashTx" {
-		result = *u.HashTx
+	if armName == "PreAuthTx" {
+		result = *u.PreAuthTx
 		ok = true
 	}
 
