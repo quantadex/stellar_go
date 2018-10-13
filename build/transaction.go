@@ -257,8 +257,8 @@ func (m MemoText) MutateTransaction(o *TransactionBuilder) (err error) {
 }
 
 func (m Timebounds) MutateTransaction(o *TransactionBuilder) error {
-    o.TX.TimeBounds = &xdr.TimeBounds{MinTime: xdr.Uint64(m.MinTime), MaxTime: xdr.Uint64(m.MaxTime)}
-    return nil
+	o.TX.TimeBounds = &xdr.TimeBounds{MinTime: xdr.Uint64(m.MinTime), MaxTime: xdr.Uint64(m.MaxTime)}
+	return nil
 }
 
 // MutateTransaction for Network sets the Network ID to use when signing this transaction
@@ -314,5 +314,15 @@ func (m SourceAccount) MutateTransaction(o *TransactionBuilder) error {
 func (m BaseFee) MutateTransaction(o *TransactionBuilder) error {
 	o.BaseFee = m.Amount
 
+	return nil
+}
+
+// MutateTransaction for SettlementBuilder
+func (m SettlementBuilder) MutateTransaction(o *TransactionBuilder) error {
+	m.O.Body, m.Err = xdr.NewOperationBody(xdr.OperationTypeSettlement, m.Settlement)
+	if m.Err != nil {
+		return m.Err
+	}
+	o.TX.Operations = append(o.TX.Operations, m.O)
 	return nil
 }
