@@ -587,7 +587,8 @@ func (e DataValue) XDRMaxSize() int {
 //    {
 //        ASSET_TYPE_NATIVE = 0,
 //        ASSET_TYPE_CREDIT_ALPHANUM4 = 1,
-//        ASSET_TYPE_CREDIT_ALPHANUM12 = 2
+//        ASSET_TYPE_CREDIT_ALPHANUM12 = 2,
+//        ASSET_TYPE_CREDIT_ALPHANUM64 = 3
 //    };
 //
 type AssetType int32
@@ -596,12 +597,14 @@ const (
 	AssetTypeAssetTypeNative           AssetType = 0
 	AssetTypeAssetTypeCreditAlphanum4  AssetType = 1
 	AssetTypeAssetTypeCreditAlphanum12 AssetType = 2
+	AssetTypeAssetTypeCreditAlphanum64 AssetType = 3
 )
 
 var assetTypeMap = map[int32]string{
 	0: "AssetTypeAssetTypeNative",
 	1: "AssetTypeAssetTypeCreditAlphanum4",
 	2: "AssetTypeAssetTypeCreditAlphanum12",
+	3: "AssetTypeAssetTypeCreditAlphanum64",
 }
 
 // ValidEnum validates a proposed value for this enum.  Implements
@@ -643,6 +646,19 @@ type AssetAlphaNum12 struct {
 	Issuer    AccountId
 }
 
+// AssetAlphaNum64 is an XDR NestedStruct defines as:
+//
+//   struct
+//        {
+//            opaque assetCode[64]; // 13 to 64 characters
+//            AccountID issuer;
+//        }
+//
+type AssetAlphaNum64 struct {
+	AssetCode [64]byte `xdrmaxsize:"64"`
+	Issuer    AccountId
+}
+
 // Asset is an XDR Union defines as:
 //
 //   union Asset switch (AssetType type)
@@ -664,6 +680,15 @@ type AssetAlphaNum12 struct {
 //            AccountID issuer;
 //        } alphaNum12;
 //
+//        // the future is now
+//
+//    case ASSET_TYPE_CREDIT_ALPHANUM64:
+//        struct
+//        {
+//            opaque assetCode[64]; // 13 to 64 characters
+//            AccountID issuer;
+//        } alphaNum64;
+//
 //        // add other asset types here in the future
 //    };
 //
@@ -671,6 +696,7 @@ type Asset struct {
 	Type       AssetType
 	AlphaNum4  *AssetAlphaNum4
 	AlphaNum12 *AssetAlphaNum12
+	AlphaNum64 *AssetAlphaNum64
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -689,6 +715,8 @@ func (u Asset) ArmForSwitch(sw int32) (string, bool) {
 		return "AlphaNum4", true
 	case AssetTypeAssetTypeCreditAlphanum12:
 		return "AlphaNum12", true
+	case AssetTypeAssetTypeCreditAlphanum64:
+		return "AlphaNum64", true
 	}
 	return "-", false
 }
@@ -713,6 +741,13 @@ func NewAsset(aType AssetType, value interface{}) (result Asset, err error) {
 			return
 		}
 		result.AlphaNum12 = &tv
+	case AssetTypeAssetTypeCreditAlphanum64:
+		tv, ok := value.(AssetAlphaNum64)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be AssetAlphaNum64")
+			return
+		}
+		result.AlphaNum64 = &tv
 	}
 	return
 }
@@ -761,6 +796,31 @@ func (u Asset) GetAlphaNum12() (result AssetAlphaNum12, ok bool) {
 
 	if armName == "AlphaNum12" {
 		result = *u.AlphaNum12
+		ok = true
+	}
+
+	return
+}
+
+// MustAlphaNum64 retrieves the AlphaNum64 value from the union,
+// panicing if the value is not set.
+func (u Asset) MustAlphaNum64() AssetAlphaNum64 {
+	val, ok := u.GetAlphaNum64()
+
+	if !ok {
+		panic("arm AlphaNum64 is not set")
+	}
+
+	return val
+}
+
+// GetAlphaNum64 retrieves the AlphaNum64 value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u Asset) GetAlphaNum64() (result AssetAlphaNum64, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "AlphaNum64" {
+		result = *u.AlphaNum64
 		ok = true
 	}
 
@@ -1795,6 +1855,10 @@ type ChangeTrustOp struct {
 //        case ASSET_TYPE_CREDIT_ALPHANUM12:
 //            opaque assetCode12[12];
 //
+//        // the future is now
+//        case ASSET_TYPE_CREDIT_ALPHANUM64:
+//            opaque assetCode64[64];
+//
 //            // add other asset types here in the future
 //        }
 //
@@ -1802,6 +1866,7 @@ type AllowTrustOpAsset struct {
 	Type        AssetType
 	AssetCode4  *[4]byte  `xdrmaxsize:"4"`
 	AssetCode12 *[12]byte `xdrmaxsize:"12"`
+	AssetCode64 *[64]byte `xdrmaxsize:"64"`
 }
 
 // SwitchFieldName returns the field name in which this union's
@@ -1818,6 +1883,8 @@ func (u AllowTrustOpAsset) ArmForSwitch(sw int32) (string, bool) {
 		return "AssetCode4", true
 	case AssetTypeAssetTypeCreditAlphanum12:
 		return "AssetCode12", true
+	case AssetTypeAssetTypeCreditAlphanum64:
+		return "AssetCode64", true
 	}
 	return "-", false
 }
@@ -1840,6 +1907,13 @@ func NewAllowTrustOpAsset(aType AssetType, value interface{}) (result AllowTrust
 			return
 		}
 		result.AssetCode12 = &tv
+	case AssetTypeAssetTypeCreditAlphanum64:
+		tv, ok := value.([64]byte)
+		if !ok {
+			err = fmt.Errorf("invalid value, must be [64]byte")
+			return
+		}
+		result.AssetCode64 = &tv
 	}
 	return
 }
@@ -1894,6 +1968,31 @@ func (u AllowTrustOpAsset) GetAssetCode12() (result [12]byte, ok bool) {
 	return
 }
 
+// MustAssetCode64 retrieves the AssetCode64 value from the union,
+// panicing if the value is not set.
+func (u AllowTrustOpAsset) MustAssetCode64() [64]byte {
+	val, ok := u.GetAssetCode64()
+
+	if !ok {
+		panic("arm AssetCode64 is not set")
+	}
+
+	return val
+}
+
+// GetAssetCode64 retrieves the AssetCode64 value from the union,
+// returning ok if the union's switch indicated the value is valid.
+func (u AllowTrustOpAsset) GetAssetCode64() (result [64]byte, ok bool) {
+	armName, _ := u.ArmForSwitch(int32(u.Type))
+
+	if armName == "AssetCode64" {
+		result = *u.AssetCode64
+		ok = true
+	}
+
+	return
+}
+
 // AllowTrustOp is an XDR Struct defines as:
 //
 //   struct AllowTrustOp
@@ -1907,6 +2006,10 @@ func (u AllowTrustOpAsset) GetAssetCode12() (result [12]byte, ok bool) {
 //
 //        case ASSET_TYPE_CREDIT_ALPHANUM12:
 //            opaque assetCode12[12];
+//
+//        // the future is now
+//        case ASSET_TYPE_CREDIT_ALPHANUM64:
+//            opaque assetCode64[64];
 //
 //            // add other asset types here in the future
 //        }
