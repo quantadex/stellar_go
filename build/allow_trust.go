@@ -1,7 +1,6 @@
 package build
 
 import (
-	"fmt"
 	"github.com/stellar/go/support/errors"
 	"github.com/stellar/go/xdr"
 )
@@ -55,7 +54,7 @@ func (m Authorize) MutateAllowTrust(o *xdr.AllowTrustOp) error {
 // MutateAllowTrust for Asset sets the AllowTrustOp's Asset field
 func (m AllowTrustAsset) MutateAllowTrust(o *xdr.AllowTrustOp) (err error) {
 	length := len(m.Code)
-	fmt.Println("mutate allow trust", length)
+
 	switch {
 	case length >= 1 && length <= 4:
 		var code [4]byte
