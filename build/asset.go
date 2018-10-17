@@ -1,7 +1,6 @@
 package build
 
 import (
-	"fmt"
 	"github.com/stellar/go/support/errors"
 	"github.com/stellar/go/xdr"
 )
@@ -28,7 +27,7 @@ func (a Asset) ToXDR() (xdr.Asset, error) {
 	}
 
 	length := len(a.Code)
-	fmt.Println("toxdr", length)
+
 	switch {
 	case length >= 1 && length <= 4:
 		var codeArray [4]byte
