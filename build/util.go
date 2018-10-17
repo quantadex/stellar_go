@@ -21,7 +21,7 @@ func setAccountId(addressOrSeed string, aid *xdr.AccountId) error {
 }
 
 func createAlphaNumAsset(code, issuerAccountId string) (xdr.Asset, error) {
-	fmt.Println("createasset")
+
 	var issuer xdr.AccountId
 	err := setAccountId(issuerAccountId, &issuer)
 	if err != nil {
