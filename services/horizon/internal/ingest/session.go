@@ -313,7 +313,8 @@ func (is *Session) ingestEffects() {
 		}
 
 		effects.Add(source, effect, dets)
-
+	case xdr.OperationTypeSettlement:
+		println("Settlement effect")
 	default:
 		is.Err = fmt.Errorf("Unknown operation type: %s", is.Cursor.OperationType())
 		return
@@ -738,6 +739,10 @@ func (is *Session) operationDetails() map[string]interface{} {
 		} else {
 			details["value"] = nil
 		}
+	case xdr.OperationTypeSettlement:
+		op := c.Operation().Body.MustSettlementOp()
+		details["settlement_hash"] = op.SettlementHash
+
 	default:
 		panic(fmt.Errorf("Unknown operation type: %s", c.OperationType()))
 	}
