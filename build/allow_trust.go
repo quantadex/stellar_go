@@ -66,6 +66,11 @@ func (m AllowTrustAsset) MutateAllowTrust(o *xdr.AllowTrustOp) (err error) {
 		byteArray := []byte(m.Code)
 		copy(code[:], byteArray[0:length])
 		o.Asset, err = xdr.NewAllowTrustOpAsset(xdr.AssetTypeAssetTypeCreditAlphanum12, code)
+	case length >= 13 && length <= 64:
+		var code [64]byte
+		byteArray := []byte(m.Code)
+		copy(code[:], byteArray[0:length])
+		o.Asset, err = xdr.NewAllowTrustOpAsset(xdr.AssetTypeAssetTypeCreditAlphanum64, code)
 	default:
 		err = errors.New("Asset code length is invalid")
 	}

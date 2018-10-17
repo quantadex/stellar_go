@@ -1,6 +1,7 @@
 package build
 
 import (
+	"fmt"
 	"github.com/stellar/go/support/errors"
 	"github.com/stellar/go/xdr"
 )
@@ -27,6 +28,7 @@ func (a Asset) ToXDR() (xdr.Asset, error) {
 	}
 
 	length := len(a.Code)
+	fmt.Println("toxdr", length)
 	switch {
 	case length >= 1 && length <= 4:
 		var codeArray [4]byte
@@ -40,6 +42,12 @@ func (a Asset) ToXDR() (xdr.Asset, error) {
 		copy(codeArray[:], byteArray[0:length])
 		asset := xdr.AssetAlphaNum12{AssetCode: codeArray, Issuer: issuer}
 		return xdr.NewAsset(xdr.AssetTypeAssetTypeCreditAlphanum12, asset)
+	case length >= 13 && length <= 64:
+		var codeArray [64]byte
+		byteArray := []byte(a.Code)
+		copy(codeArray[:], byteArray[0:length])
+		asset := xdr.AssetAlphaNum64{AssetCode: codeArray, Issuer: issuer}
+		return xdr.NewAsset(xdr.AssetTypeAssetTypeCreditAlphanum64, asset)
 	default:
 		return xdr.Asset{}, errors.New("Asset code length is invalid")
 	}
