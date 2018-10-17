@@ -1,6 +1,7 @@
 package build
 
 import (
+	"fmt"
 	"github.com/stellar/go/keypair"
 	"github.com/stellar/go/support/errors"
 	"github.com/stellar/go/xdr"
@@ -20,6 +21,7 @@ func setAccountId(addressOrSeed string, aid *xdr.AccountId) error {
 }
 
 func createAlphaNumAsset(code, issuerAccountId string) (xdr.Asset, error) {
+	fmt.Println("createasset")
 	var issuer xdr.AccountId
 	err := setAccountId(issuerAccountId, &issuer)
 	if err != nil {
@@ -27,6 +29,7 @@ func createAlphaNumAsset(code, issuerAccountId string) (xdr.Asset, error) {
 	}
 
 	length := len(code)
+	fmt.Println(length)
 	switch {
 	case length >= 1 && length <= 4:
 		var codeArray [4]byte
@@ -40,6 +43,12 @@ func createAlphaNumAsset(code, issuerAccountId string) (xdr.Asset, error) {
 		copy(codeArray[:], byteArray[0:length])
 		asset := xdr.AssetAlphaNum12{AssetCode: codeArray, Issuer: issuer}
 		return xdr.NewAsset(xdr.AssetTypeAssetTypeCreditAlphanum12, asset)
+	case length >= 13 && length <= 64:
+		var codeArray [64]byte
+		byteArray := []byte(code)
+		copy(codeArray[:], byteArray[0:length])
+		asset := xdr.AssetAlphaNum64{AssetCode: codeArray, Issuer: issuer}
+		return xdr.NewAsset(xdr.AssetTypeAssetTypeCreditAlphanum64, asset)
 	default:
 		return xdr.Asset{}, errors.New("Asset code length is invalid")
 	}
