@@ -170,6 +170,25 @@ func AssetFromDB(typ xdr.AssetType, code string, issuer string) (result xdr.Asse
 			return
 		}
 		result, err = xdr.NewAsset(xdr.AssetTypeAssetTypeCreditAlphanum12, an)
+	case xdr.AssetTypeAssetTypeCreditAlphanum64:
+		var (
+			an      xdr.AssetAlphaNum64
+			decoded []byte
+			pkey    xdr.Uint256
+		)
+
+		copy(an.AssetCode[:], []byte(code))
+		decoded, err = strkey.Decode(strkey.VersionByteAccountID, issuer)
+		if err != nil {
+			return
+		}
+
+		copy(pkey[:], decoded)
+		an.Issuer, err = xdr.NewAccountId(xdr.PublicKeyTypePublicKeyTypeEd25519, pkey)
+		if err != nil {
+			return
+		}
+		result, err = xdr.NewAsset(xdr.AssetTypeAssetTypeCreditAlphanum64, an)
 	}
 
 	return

@@ -293,6 +293,18 @@ func (base *Base) GetAsset(prefix string) (result xdr.Asset) {
 
 		copy(a.AssetCode[:len(c)], []byte(c))
 		value = a
+	case xdr.AssetTypeAssetTypeCreditAlphanum64:
+		a := xdr.AssetAlphaNum64{}
+		a.Issuer = base.GetAccountID(prefix + "asset_issuer")
+
+		c := base.GetString(prefix + "asset_code")
+		if len(c) > len(a.AssetCode) {
+			base.SetInvalidField(prefix+"asset_code", errors.New("code too long"))
+			return
+		}
+
+		copy(a.AssetCode[:len(c)], []byte(c))
+		value = a
 	}
 
 	result, err := xdr.NewAsset(t, value)
