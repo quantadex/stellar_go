@@ -7,7 +7,7 @@ import (
 )
 
 // ErrInvalidString gets returns when the string form of the asset type is invalid
-var ErrInvalidString = errors.New("invalid asset type: was not one of 'native', 'credit_alphanum4', 'credit_alphanum12'")
+var ErrInvalidString = errors.New("invalid asset type: was not one of 'native', 'credit_alphanum4', 'credit_alphanum12', 'credit_alphanum64'")
 
 //ErrInvalidValue gets returned when the xdr.AssetType int value is not one of the valid enum values
 var ErrInvalidValue = errors.New("unknown asset type, cannot convert to string")
@@ -18,6 +18,7 @@ var AssetTypeMap = map[string]xdr.AssetType{
 	"native":            xdr.AssetTypeAssetTypeNative,
 	"credit_alphanum4":  xdr.AssetTypeAssetTypeCreditAlphanum4,
 	"credit_alphanum12": xdr.AssetTypeAssetTypeCreditAlphanum12,
+	"credit_alphanum64": xdr.AssetTypeAssetTypeCreditAlphanum64,
 }
 
 //Parse creates an asset from the provided strings.  See AssetTypeMap for valid strings for aType.
