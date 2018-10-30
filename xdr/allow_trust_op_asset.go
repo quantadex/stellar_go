@@ -20,6 +20,11 @@ func (a AllowTrustOpAsset) ToAsset(issuer AccountId) (ret Asset) {
 			AssetCode: a.MustAssetCode12(),
 			Issuer:    issuer,
 		})
+	case AssetTypeAssetTypeCreditAlphanum64:
+		ret, err = NewAsset(AssetTypeAssetTypeCreditAlphanum12, AssetAlphaNum64{
+			AssetCode: a.MustAssetCode64(),
+			Issuer:    issuer,
+		})
 	default:
 		err = fmt.Errorf("Unexpected type for AllowTrustOpAsset: %d", a.Type)
 	}
