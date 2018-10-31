@@ -1,7 +1,6 @@
 package build
 
 import (
-	"fmt"
 	"github.com/stellar/go/amount"
 	"github.com/stellar/go/support/errors"
 	"github.com/stellar/go/xdr"
@@ -63,7 +62,6 @@ func (b *PaymentBuilder) Mutate(muts ...interface{}) {
 
 // MutatePayment for Asset sets the PaymentOp's Asset field
 func (m CreditAmount) MutatePayment(o interface{}) (err error) {
-	fmt.Println("Mutate Payment")
 	switch o := o.(type) {
 	default:
 		err = errors.New("Unexpected operation type")
