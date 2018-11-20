@@ -4,8 +4,8 @@ import (
 	"time"
 
 	"github.com/stellar/go/services/horizon/internal/db2/history"
-	"github.com/stellar/go/services/horizon/internal/resource/base"
 	"github.com/stellar/go/services/horizon/internal/render/hal"
+	"github.com/stellar/go/services/horizon/internal/resource/base"
 	"github.com/stellar/go/xdr"
 	"golang.org/x/net/context"
 )
@@ -24,6 +24,7 @@ var TypeNames = map[xdr.OperationType]string{
 	xdr.OperationTypeAccountMerge:       "account_merge",
 	xdr.OperationTypeInflation:          "inflation",
 	xdr.OperationTypeManageData:         "manage_data",
+	xdr.OperationTypeSettlement:         "settlement",
 }
 
 // New creates a new operation resource, finding the appropriate type to use
@@ -82,6 +83,10 @@ func New(
 		result = e
 	case xdr.OperationTypeManageData:
 		e := ManageData{Base: base}
+		err = row.UnmarshalDetails(&e)
+		result = e
+	case xdr.OperationTypeSettlement:
+		e := MatchedOrders{Base: base}
 		err = row.UnmarshalDetails(&e)
 		result = e
 	default:
@@ -223,4 +228,20 @@ type AccountMerge struct {
 // Inflation.
 type Inflation struct {
 	Base
+}
+
+type MatchedOrders struct {
+	Base
+	Order []MatchOrder `json:"order"`
+}
+
+type MatchOrder struct {
+	Buyer         string `json:"buyer"`
+	Seller        string `json:"seller"`
+	AmountBuy     string `json:"amount_buy"`
+	AmountSell    string `json:"amount_sell"`
+	BuyAssetType  string `json:"buying_asset_type"`
+	BuyAssetCode  string `json:"buying_asset_code"`
+	SellAssetType string `json:"selling_asset_type"`
+	SellAssetCode string `json:"selling_asset_code"`
 }

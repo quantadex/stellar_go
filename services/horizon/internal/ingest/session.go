@@ -742,6 +742,19 @@ func (is *Session) operationDetails() map[string]interface{} {
 	case xdr.OperationTypeSettlement:
 		op := c.Operation().Body.MustSettlementOp()
 		details["settlement_hash"] = op.SettlementHash
+		details["parentSettlement_hash"] = op.ParentSettlementHash
+		var order = make([]map[string]interface{}, len(op.MatchedOrders))
+		for i := range op.MatchedOrders {
+			order[i] = map[string]interface{}{
+				"buyer":       op.MatchedOrders[i].Buyer.Address(),
+				"seller":      op.MatchedOrders[i].Seller.Address(),
+				"amount_buy":  amount.String(op.MatchedOrders[i].AmountBuy),
+				"amount_sell": amount.String(op.MatchedOrders[i].AmountSell),
+			}
+			is.assetDetails(order[i], op.MatchedOrders[i].AssetBuy, "buying_")
+			is.assetDetails(order[i], op.MatchedOrders[i].AssetSell, "selling_")
+		}
+		details["order"] = order
 
 	default:
 		panic(fmt.Errorf("Unknown operation type: %s", c.OperationType()))

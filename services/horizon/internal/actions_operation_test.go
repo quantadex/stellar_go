@@ -2,10 +2,21 @@ package horizon
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/stellar/go.bak/_vendor-20181016153202/github.com/go-errors/errors"
+	"github.com/stellar/go/build"
+	"github.com/stellar/go/clients/horizon"
+	"github.com/stellar/go/services/horizon/internal/resource"
+	"github.com/stellar/go/support/log"
+	"net/http"
+	//"net/url"
+	"strconv"
 	"testing"
 	"time"
 
-	"github.com/stellar/go/services/horizon/internal/db2/history"
+	//"time"
+
+	//"github.com/stellar/go/services/horizon/internal/db2/history"
 	"github.com/stellar/go/services/horizon/internal/resource/operations"
 	"github.com/stellar/go/services/horizon/internal/test"
 )
@@ -123,16 +134,84 @@ func TestOperationActions_Regressions(t *testing.T) {
 }
 
 func TestOperation_CreatedAt(t *testing.T) {
-	ht := StartHTTPTest(t, "base")
-	defer ht.Finish()
 
-	w := ht.Get("/ledgers/3/operations")
-	records := []operations.Base{}
-	ht.UnmarshalPage(w.Body, &records)
+	Horizon := &horizon.Client{
+		URL:  "http://localhost:8000",
+		HTTP: http.DefaultClient,
+	}
 
-	l := history.Ledger{}
-	hq := history.Q{Session: ht.HorizonSession()}
-	ht.Require.NoError(hq.LedgerBySequence(&l, 3))
+	order := &build.Order{
+		Buyer: build.OrderInfo{
+			Code:    "ETH",
+			Issuer:  "QAIVSB7SVO76Z3SHYCU4NCYJ44WLA2Z6DVJAX3ICEM4RYSPWS3KJ6XXP",
+			Amount:  10,
+			Account: "QDNDQ74KK5XIT7RPOB7BB7STTZHCXU6GEXLPXIMW4ICQHGV3BTLGMOV3",
+		},
+		Seller: build.OrderInfo{
+			Code:    "BTC",
+			Issuer:  "QAIVSB7SVO76Z3SHYCU4NCYJ44WLA2Z6DVJAX3ICEM4RYSPWS3KJ6XXP",
+			Amount:  10,
+			Account: "QCVABKNIUKXJSJMXGHPQC2ZRK6J26PKIM6DYFB4WTJ5YU5W3BKZ3BXZS",
+		},
+	}
 
-	ht.Assert.WithinDuration(l.ClosedAt, records[0].LedgerCloseTime, 1*time.Second)
+	orderBuilder, err := build.MatchedOrder(order)
+	if err != nil {
+		log.Errorf("submit err %s", err.Error())
+		return
+	}
+	settlementBuilder, err := build.Settlement(orderBuilder)
+	if err != nil {
+		log.Errorf("submit err %s", err.Error())
+		return
+	}
+
+	w, err := Horizon.HTTP.Get("http://localhost:8000/accounts/QBJUMEXBXBQN6NGHVGE4U3IWLYKF6RZ2JXY67CBSLKPXNZPLJ2KZ5DWH")
+	var result resource.Account
+	if err == nil {
+		if err := json.NewDecoder(w.Body).Decode(&result); err != nil {
+			errors.New("failed to decode operations: " + err.Error())
+		}
+	}
+	seq, err := strconv.ParseUint(result.Sequence, 10, 64)
+
+	fmt.Println("Seq = ", seq)
+	tx, err := build.Transaction(
+		build.Network{"QUANTA Test Network ; September 2018"},
+		build.SourceAccount{"QBJUMEXBXBQN6NGHVGE4U3IWLYKF6RZ2JXY67CBSLKPXNZPLJ2KZ5DWH"},
+		build.Sequence{seq + 1},
+		settlementBuilder,
+	)
+	if err != nil {
+		log.Errorf("submit err %s", err.Error())
+		return
+	}
+
+	sign, err := tx.Sign("ZCQ4DDYJMXPLAN5ZUAQ5UXH325BRLOPI2326XUYU3LDVQZEIBIJJZCGA")
+	if err != nil {
+		log.Errorf("submit err %s", err.Error())
+		return
+	}
+
+	signed, err := sign.Base64()
+	if err != nil {
+		log.Errorf("submit err %s", err.Error())
+		return
+	}
+
+	fmt.Println(signed)
+	Horizon.SubmitTransaction(signed)
+
+	time.Sleep(time.Second * 4)
+
+	//w = ht.Post("/transactions", form)
+	//w := ht.Get("/ledgers/3/operations")
+	//records := []operations.Base{}
+	//ht.UnmarshalPage(w.Body, &records)
+
+	//l := history.Ledger{}
+	//hq := history.Q{Session: ht.HorizonSession()}
+	//ht.Require.NoError(hq.LedgerBySequence(&l, 3))
+
+	//ht.Assert.WithinDuration(l.ClosedAt, records[0].LedgerCloseTime, 1*time.Second)
 }
