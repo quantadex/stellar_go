@@ -232,7 +232,9 @@ type Inflation struct {
 
 type MatchedOrders struct {
 	Base
-	Order []MatchOrder `json:"order"`
+	SettlementHash       string       `json:"settlement_hash"`
+	ParentSettlementHash string       `json:"parent_settlement_hash"`
+	MatchedOrders        []MatchOrder `json:"matched_orders"`
 }
 
 type MatchOrder struct {
