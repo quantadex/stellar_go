@@ -232,16 +232,20 @@ type Inflation struct {
 
 type MatchedOrders struct {
 	Base
-	Order []MatchOrder `json:"order"`
+	SettlementHash       string       `json:"settlement_hash"`
+	ParentSettlementHash string       `json:"parent_settlement_hash"`
+	MatchedOrders        []MatchOrder `json:"matched_orders"`
 }
 
 type MatchOrder struct {
-	Buyer         string `json:"buyer"`
-	Seller        string `json:"seller"`
-	AmountBuy     string `json:"amount_buy"`
-	AmountSell    string `json:"amount_sell"`
-	BuyAssetType  string `json:"buying_asset_type"`
-	BuyAssetCode  string `json:"buying_asset_code"`
-	SellAssetType string `json:"selling_asset_type"`
-	SellAssetCode string `json:"selling_asset_code"`
+	Buyer           string `json:"buyer"`
+	Seller          string `json:"seller"`
+	AmountBuy       string `json:"amount_buy"`
+	AmountSell      string `json:"amount_sell"`
+	BuyAssetType    string `json:"buying_asset_type"`
+	BuyAssetCode    string `json:"buying_asset_code"`
+	BuyAssetIssuer  string `json:"buying_asset_issuer"`
+	SellAssetType   string `json:"selling_asset_type"`
+	SellAssetCode   string `json:"selling_asset_code"`
+	SellAssetIssuer string `json:"selling_asset_issuer"`
 }
